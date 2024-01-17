@@ -1,3 +1,5 @@
+from __future__ import print_function  # Voeg dit aan het begin van je script toe
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -11,5 +13,5 @@ if __name__ == "__main__":
     port = 8000  # Kies een poortnummer dat beschikbaar is
     server_address = ("", port)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
-    print(f"Server gestart op poort {port}")
+    print("Server gestart op poort {}".format(port))
     httpd.serve_forever()
