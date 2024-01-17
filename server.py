@@ -8,7 +8,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"Hello, World!")
 
 if __name__ == "__main__":
-    port = 80  # Kies een poortnummer dat beschikbaar is
+    port = 8000  # Kies een poortnummer dat beschikbaar is
     server_address = ("", port)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
     print(f"Server gestart op poort {port}")
