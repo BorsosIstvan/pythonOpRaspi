@@ -1,8 +1,8 @@
-from __future__ import print_function  # Voeg dit aan het begin van je script toe
+from __future__ import print_function
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-
-class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+class SimpleHTTPRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -10,7 +10,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"Hello, World!")
 
 if __name__ == "__main__":
-    port = 8000  # Kies een poortnummer dat beschikbaar is
+    port = 8000
     server_address = ("", port)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
     print("Server gestart op poort {}".format(port))
