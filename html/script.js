@@ -1,40 +1,94 @@
-let currentPlayer = 'X';
+class TicTacToe {
+  constructor() {
+    this.board = Array(9).fill('');
+    this.currentPlayer = 'X';
+    this.container = document.getElementById('ticTacToeContainer');
+    this.render();
+  }
 
-function handleClick(cell) {
-  if (!cell.textContent) {
-    cell.textContent = currentPlayer;
-    if (checkWinner()) {
-      alert(`Player ${currentPlayer} wins!`);
-      resetGame();
-    } else if (isBoardFull()) {
-      alert('It\'s a draw!');
-      resetGame();
-    } else {
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      if (currentPlayer === 'O') {
-        setTimeout(makeComputerMove, 500);
+  handleClick(index) {
+    if (this.board[index] === '' && !this.checkWinner()) {
+      this.board[index] = this.currentPlayer;
+      this.render();
+      if (this.checkWinner()) {
+        alert(`Player ${this.currentPlayer} wins!`);
+        this.resetGame();
+      } else if (this.isBoardFull()) {
+        alert('It\'s a draw!');
+        this.resetGame();
+      } else {
+        this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+        if (this.currentPlayer === 'O') {
+          setTimeout(() => this.makeComputerMove(), 500);
+        }
       }
     }
   }
-}
 
-function makeComputerMove() {
-  const emptyCells = document.querySelectorAll('td:not(:empty)');
-  if (emptyCells.length > 0) {
-    const randomIndex = Math.floor(Math.random() * emptyCells.length);
-    const computerMove = emptyCells[randomIndex];
-    computerMove.textContent = 'O';
-
-    if (checkWinner()) {
-      alert('Player O wins!');
-      resetGame();
-    } else if (isBoardFull()) {
-      alert('It\'s a draw!');
-      resetGame();
-    } else {
-      currentPlayer = 'X';
+  makeComputerMove() {
+    const emptyCells = this.getEmptyCells();
+    if (emptyCells.length > 0) {
+      const randomIndex = Math.floor(Math.random() * emptyCells.length);
+      const computerMove = emptyCells[randomIndex];
+      this.board[computerMove] = 'O';
+      this.render();
+      if (this.checkWinner()) {
+        alert('Player O wins!');
+        this.resetGame();
+      } else if (this.isBoardFull()) {
+        alert('It\'s a draw!');
+        this.resetGame();
+      } else {
+        this.currentPlayer = 'X';
+      }
     }
+  }
+
+  getEmptyCells() {
+    return this.board.reduce((emptyCells, cell, index) => {
+      if (cell === '') {
+        emptyCells.push(index);
+      }
+      return emptyCells;
+    }, []);
+  }
+
+  checkWinner() {
+    // Implementeer de logica voor het controleren van de winnaar
+    // (deze kan vergelijkbaar zijn met de bestaande getWinner-functie)
+    return false;
+  }
+
+  isBoardFull() {
+    return this.board.every(cell => cell !== '');
+  }
+
+  resetGame() {
+    this.board = Array(9).fill('');
+    this.currentPlayer = 'X';
+    this.render();
+    if (this.currentPlayer === 'O') {
+      setTimeout(() => this.makeComputerMove(), 500);
+    }
+  }
+
+  render() {
+    this.container.innerHTML = '';
+    const table = document.createElement('table');
+    for (let i = 0; i < 3; i++) {
+      const row = table.insertRow();
+      for (let j = 0; j < 3; j++) {
+        const cell = row.insertCell();
+        const index = i * 3 + j;
+        cell.textContent = this.board[index];
+        cell.addEventListener('click', () => this.handleClick(index));
+      }
+    }
+    this.container.appendChild(table);
   }
 }
 
-// Voeg de rest van je functies toe (checkWinner, isBoardFull, resetGame) hieronder
+// Maak een instantie van TicTacToe wanneer de pagina laadt
+document.addEventListener('DOMContentLoaded', () => {
+  new TicTacToe();
+});
