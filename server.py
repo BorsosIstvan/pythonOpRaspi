@@ -2,7 +2,7 @@ import SimpleHTTPServer
 import SocketServer
 
 # Specificeer de map waarin je HTML-bestanden zich bevinden
-html_directory = "../html/index.html"
+html_directory = "../html"
 
 # Specificeer de poort waarop de server zal draaien
 port = 8000
