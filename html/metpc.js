@@ -94,4 +94,31 @@ function minimax(board, depth, isMaximizing) {
   }
 }
 
-// De rest van de code blijft ongewijzigd
+function getWinner() {
+  const cells = document.querySelectorAll('td');
+  const winningCombinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6]             // diagonals
+  ];
+
+  for (const combination of winningCombinations) {
+    const [a, b, c] = combination;
+    if (cells[a].textContent && cells[a].textContent === cells[b].textContent && cells[a].textContent === cells[c].textContent) {
+      return a; // Return the winning index
+    }
+  }
+
+  return null; // Return null if no winner
+}
+
+function isBoardFull() {
+  const cells = document.querySelectorAll('td');
+  return Array.from(cells).every(cell => cell.textContent !== '');
+}
+
+function resetGame() {
+  const cells = document.querySelectorAll('td');
+  cells.forEach(cell => cell.textContent = '');
+  currentPlayer = 'X';
+}
