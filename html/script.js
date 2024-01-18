@@ -73,6 +73,7 @@ class TicTacToe {
   }
 
   render() {
+  console.log("Rendering the board");
     this.container.innerHTML = '';
     const table = document.createElement('table');
     for (let i = 0; i < 3; i++) {
@@ -93,3 +94,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new TicTacToe();
   game.render(); // Voeg hier render-aanroep toe
 });
+console.log("DOMContentLoaded event fired");
+
