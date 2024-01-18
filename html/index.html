@@ -15,7 +15,6 @@
       border: 1px solid #ccc;
       text-align: center;
       font-size: 24px;
-      cursor: pointer;
     }
   </style>
 </head>
@@ -41,7 +40,70 @@
   </tr>
 </table>
 
-<script src="metpc.js"></script>
+<script>
+  let currentPlayer = 'X';
+  let computerPlayer = 'O';
+
+  // Laat de computer beginnen
+  setTimeout(makeComputerMove, 500);
+
+  function handleClick(cell) {
+    if (!cell.textContent) {
+      cell.textContent = currentPlayer;
+      if (checkWinner()) {
+        alert(`Player ${currentPlayer} wins!`);
+        resetGame();
+      } else if (isBoardFull()) {
+        alert('It\'s a draw!');
+        resetGame();
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        if (currentPlayer === 'O') {
+          setTimeout(makeComputerMove, 500);
+        }
+      }
+    }
+  }
+
+  function makeComputerMove() {
+    const emptyCells = document.querySelectorAll('td:not(:empty)');
+    if (emptyCells.length > 0) {
+      const randomIndex = Math.floor(Math.random() * emptyCells.length);
+      const computerMove = emptyCells[randomIndex];
+      computerMove.textContent = computerPlayer;
+
+      if (checkWinner()) {
+        alert(`Player ${computerPlayer} wins!`);
+        resetGame();
+      } else if (isBoardFull()) {
+        alert('It\'s a draw!');
+        resetGame();
+      } else {
+        currentPlayer = 'X';
+      }
+    }
+  }
+
+  function checkWinner() {
+    // Implementeer de logica voor het controleren van de winnaar
+    // (deze kan vergelijkbaar zijn met de bestaande getWinner-functie)
+    return false;
+  }
+
+  function isBoardFull() {
+    const cells = document.querySelectorAll('td');
+    return Array.from(cells).every(cell => cell.textContent !== '');
+  }
+
+  function resetGame() {
+    const cells = document.querySelectorAll('td');
+    cells.forEach(cell => cell.textContent = '');
+    currentPlayer = 'X';
+
+    // Laat de computer opnieuw beginnen na reset
+    setTimeout(makeComputerMove, 500);
+  }
+</script>
 
 </body>
 </html>
