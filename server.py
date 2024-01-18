@@ -1,17 +1,20 @@
-from __future__ import print_function
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-from BaseHTTPServer import HTTPServer
+import SimpleHTTPServer
+import SocketServer
 
-class SimpleHTTPRequestHandler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-        self.wfile.write(b"Hello, World!")
+# Specificeer de map waarin je HTML-bestanden zich bevinden
+html_directory = "jouw/map/naam"
 
-if __name__ == "__main__":
-    port = 8000
-    server_address = ("", port)
-    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
-    print("Server gestart op poort {}".format(port))
-    httpd.serve_forever()
+# Specificeer de poort waarop de server zal draaien
+port = 8000
+
+# Wijzig de huidige werkmap naar de map met HTML-bestanden
+# Dit is belangrijk omdat de server vanuit deze map bestanden zal serveren
+import os
+os.chdir(html_directory)
+
+# Start de HTTP-server
+Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+httpd = SocketServer.TCPServer(("", port), Handler)
+
+print "Serving op poort", port
+httpd.serve_forever()
