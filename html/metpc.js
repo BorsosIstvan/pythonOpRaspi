@@ -122,3 +122,20 @@ function resetGame() {
   cells.forEach(cell => cell.textContent = '');
   currentPlayer = 'X';
 }
+function handleClick(cell) {
+  if (!cell.textContent) {
+    cell.textContent = currentPlayer;
+    if (checkWinner()) {
+      alert(`Player ${currentPlayer} wins!`);
+      resetGame();
+    } else if (isBoardFull()) {
+      alert('It\'s a draw!');
+      resetGame();
+    } else {
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      if (currentPlayer === 'O') {
+        setTimeout(makeComputerMove, 500);
+      }
+    }
+  }
+}
