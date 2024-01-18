@@ -1,14 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Andere meta-tags en titel ... -->
-
-  <!-- Voeg dit toe voor het koppelen van het externe JavaScript-bestand -->
-  <script src="tictactoe.js"></script>
-
-  <!-- Stijlen ... -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      margin: 20px auto;
+    }
+    td {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 24px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <!-- De rest van je HTML-code ... -->
+
+<h1>Tic Tac Toe</h1>
+
+<table id="ticTacToe">
+  <tr>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+  </tr>
+  <tr>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+  </tr>
+  <tr>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+    <td onclick="handleClick(this)"></td>
+  </tr>
+</table>
+
+<script>
+  let currentPlayer = 'X';
+
+  function handleClick(cell) {
+    if (!cell.textContent) {
+      cell.textContent = currentPlayer;
+      if (checkWinner()) {
+        alert(`Player ${currentPlayer} wins!`);
+        resetGame();
+      } else if (isBoardFull()) {
+        alert('It\'s a draw!');
+        resetGame();
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      }
+    }
+  }
+
+  function checkWinner() {
+    const cells = document.querySelectorAll('td');
+    const winningCombinations = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+      [0, 4, 8], [2, 4, 6]             // diagonals
+    ];
+
+    return winningCombinations.some(combination => {
+      const [a, b, c] = combination;
+      return cells[a].textContent && cells[a].textContent === cells[b].textContent && cells[a].textContent === cells[c].textContent;
+    });
+  }
+
+  function isBoardFull() {
+    const cells = document.querySelectorAll('td');
+    return Array.from(cells).every(cell => cell.textContent !== '');
+  }
+
+  function resetGame() {
+    const cells = document.querySelectorAll('td');
+    cells.forEach(cell => cell.textContent = '');
+    currentPlayer = 'X';
+  }
+</script>
+
 </body>
 </html>
