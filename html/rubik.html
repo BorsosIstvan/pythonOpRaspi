@@ -3,139 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ping Pong Game</title>
+  <title>Rubiks Cube Board</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="pingPongCanvas" width="800" height="600"></canvas>
+  <canvas id="rubiksBoard" width="300" height="300"></canvas>
 
   <script>
-    const canvas = document.getElementById('pingPongCanvas');
+    const canvas = document.getElementById('rubiksBoard');
     const ctx = canvas.getContext('2d');
-    const paddleWidth = 10;
-    const paddleHeight = 60;
-    const ballRadius = 5;
+    const cellSize = 100;
+    const rows = 3;
+    const cols = 3;
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
 
-    let paddleLeftY = canvas.height / 2 - paddleHeight / 2;
-    let paddleRightY = canvas.height / 2 - paddleHeight / 2;
-    let paddleSpeed = 5;
-
-    let ballX = canvas.width / 2;
-    let ballY = canvas.height / 2;
-    let ballSpeedX = 2;
-    let ballSpeedY = 2;
+    let rubiksBoard = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [0, 1, 2]
+    ];
 
     function draw() {
-      // Clear the canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw left paddle
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, paddleLeftY, paddleWidth, paddleHeight);
-
-      // Draw right paddle
-      ctx.fillRect(canvas.width - paddleWidth, paddleRightY, paddleWidth, paddleHeight);
-
-      // Draw ball
-      ctx.beginPath();
-      ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#000';
-      ctx.fill();
-      ctx.closePath();
-
-      // Move the ball
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
-
-      // Bounce off top and bottom walls
-      if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
-        ballSpeedY = -ballSpeedY;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * cellSize;
+          const y = row * cellSize;
+          const colorIndex = rubiksBoard[row][col];
+          const color = colors[colorIndex];
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, cellSize, cellSize);
+        }
       }
-
-      // Bounce off paddles
-      if (
-        (ballX - ballRadius < paddleWidth && ballY > paddleLeftY && ballY < paddleLeftY + paddleHeight) ||
-        (ballX + ballRadius > canvas.width - paddleWidth && ballY > paddleRightY && ballY < paddleRightY + paddleHeight)
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-
-      // Move right paddle towards the ball
-      if (ballY < paddleRightY + paddleHeight / 2) {
-        paddleRightY -= paddleSpeed;
-      } else {
-        paddleRightY += paddleSpeed;
-      }
-
-      // Ensure paddles stay within the canvas
-      paddleLeftY = Math.max(0, Math.min(paddleLeftY, canvas.height - paddleHeight));
-      paddleRightY = Math.max(0, Math.min(paddleRightY, canvas.height - paddleHeight));
-
-      // Check for a goal (ball passes left or right edge)
-      if (ballX + ballRadius < 0 || ballX - ballRadius > canvas.width) {
-        // Reset ball position
-        ballX = canvas.width / 2;
-        ballY = canvas.height / 2;
-        // Reverse ball direction
-        ballSpeedX = -ballSpeedX;
-      }
-
-      // Request the next frame
-      requestAnimationFrame(draw);
     }
 
-    // Handle keyboard input
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
+    function rotateRow(row, direction) {
+      const rotatedRow = rubiksBoard[row].slice();
 
-    let upKeyPressed = false;
-    let downKeyPressed = false;
+      if (direction === 'right') {
+        rotatedRow.unshift(rotatedRow.pop());
+      } else if (direction === 'left') {
+        rotatedRow.push(rotatedRow.shift());
+      }
 
-    function handleKeyDown(event) {
+      rubiksBoard[row] = rotatedRow;
+    }
+
+    function rotateColumn(col, direction) {
+      const rotatedColumn = rubiksBoard.map(row => row[col]);
+
+      if (direction === 'down') {
+        rotatedColumn.unshift(rotatedColumn.pop());
+      } else if (direction === 'up') {
+        rotatedColumn.push(rotatedColumn.shift());
+      }
+
+      for (let row = 0; row < rows; row++) {
+        rubiksBoard[row][col] = rotatedColumn[row];
+      }
+    }
+
+    // Handle keyboard input for rotations
+    document.addEventListener('keydown', handleKeyPress);
+
+    function handleKeyPress(event) {
       switch (event.key) {
         case 'ArrowUp':
-          upKeyPressed = true;
+          rotateColumn(1, 'up');
           break;
         case 'ArrowDown':
-          downKeyPressed = true;
+          rotateColumn(1, 'down');
+          break;
+        case 'ArrowLeft':
+          rotateRow(1, 'left');
+          break;
+        case 'ArrowRight':
+          rotateRow(1, 'right');
           break;
       }
-    }
 
-    function handleKeyUp(event) {
-      switch (event.key) {
-        case 'ArrowUp':
-          upKeyPressed = false;
-          break;
-        case 'ArrowDown':
-          downKeyPressed = false;
-          break;
-      }
-    }
-
-    // Update paddles based on keyboard input
-    function updatePaddles() {
-      if (upKeyPressed) {
-        paddleLeftY -= paddleSpeed;
-      }
-
-      if (downKeyPressed) {
-        paddleLeftY += paddleSpeed;
-      }
-    }
-
-    // Start the game loop
-    function gameLoop() {
-      updatePaddles();
       draw();
-      setTimeout(gameLoop, 60); // Run at approximately 60 frames per second
     }
 
-    // Start the game loop
-    gameLoop();
+    draw();
   </script>
 </body>
 </html>
