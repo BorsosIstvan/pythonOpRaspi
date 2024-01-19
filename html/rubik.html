@@ -3,110 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2D Rubik's Cube</title>
+  <title>Ping Pong Game</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="rubiksCanvas" width="300" height="300"></canvas>
+  <canvas id="pingPongCanvas" width="800" height="600"></canvas>
 
   <script>
-    const canvas = document.getElementById('rubiksCanvas');
+    const canvas = document.getElementById('pingPongCanvas');
     const ctx = canvas.getContext('2d');
-    const squareSize = 100;
-    const gap = 10;
-    let cubeColors = [
-      ['red', 'green', 'blue'],
-      ['yellow', 'orange', 'purple'],
-      ['purple', 'red', 'green']
-    ];
+    const paddleWidth = 10;
+    const paddleHeight = 60;
+    const ballRadius = 5;
 
-    // Functie om een vierkant te tekenen
-    function drawSquare(x, y, color) {
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, squareSize, squareSize);
+    let paddleLeftY = canvas.height / 2 - paddleHeight / 2;
+    let paddleRightY = canvas.height / 2 - paddleHeight / 2;
+    let paddleSpeed = 5;
+
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 5;
+    let ballSpeedY = 5;
+
+    function draw() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw left paddle
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, paddleLeftY, paddleWidth, paddleHeight);
+
+      // Draw right paddle
+      ctx.fillRect(canvas.width - paddleWidth, paddleRightY, paddleWidth, paddleHeight);
+
+      // Draw ball
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#000';
+      ctx.fill();
+      ctx.closePath();
+
+      // Move the ball
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // Bounce off top and bottom walls
+      if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      // Bounce off paddles
+      if (
+        (ballX - ballRadius < paddleWidth && ballY > paddleLeftY && ballY < paddleLeftY + paddleHeight) ||
+        (ballX + ballRadius > canvas.width - paddleWidth && ballY > paddleRightY && ballY < paddleRightY + paddleHeight)
+      ) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // Move right paddle towards the ball
+      if (ballY < paddleRightY + paddleHeight / 2) {
+        paddleRightY -= paddleSpeed;
+      } else {
+        paddleRightY += paddleSpeed;
+      }
+
+      // Ensure paddles stay within the canvas
+      paddleLeftY = Math.max(0, Math.min(paddleLeftY, canvas.height - paddleHeight));
+      paddleRightY = Math.max(0, Math.min(paddleRightY, canvas.height - paddleHeight));
+
+      // Check for a goal (ball passes left or right edge)
+      if (ballX + ballRadius < 0 || ballX - ballRadius > canvas.width) {
+        // Reset ball position
+        ballX = canvas.width / 2;
+        ballY = canvas.height / 2;
+        // Reverse ball direction
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // Request the next frame
+      requestAnimationFrame(draw);
     }
 
-    // Teken de huidige toestand van de "Rubiks-kubus"
-    function drawCube() {
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 3; col++) {
-          const x = col * (squareSize + gap);
-          const y = row * (squareSize + gap);
-          const color = cubeColors[row][col];
-          drawSquare(x, y, color);
-        }
+    // Handle keyboard input
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    let upKeyPressed = false;
+    let downKeyPressed = false;
+
+    function handleKeyDown(event) {
+      switch (event.key) {
+        case 'ArrowUp':
+          upKeyPressed = true;
+          break;
+        case 'ArrowDown':
+          downKeyPressed = true;
+          break;
       }
     }
 
-    // Voeg event listeners toe voor muisinteractie
-    let isDragging = false;
-    let startMouseX, startMouseY;
-
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-
-    function handleMouseDown(event) {
-      isDragging = true;
-      startMouseX = event.clientX;
-      startMouseY = event.clientY;
-    }
-
-    function handleMouseMove(event) {
-      if (isDragging) {
-        const deltaX = event.clientX - startMouseX;
-        const deltaY = event.clientY - startMouseY;
-
-        // Simuleer het draaien van de kubus (bijv. door de kleuren te verschuiven)
-        rotateCube(deltaX, deltaY);
-
-        // Teken de bijgewerkte kubus
-        drawCube();
-
-        // Update de startpositie voor de volgende beweging
-        startMouseX = event.clientX;
-        startMouseY = event.clientY;
+    function handleKeyUp(event) {
+      switch (event.key) {
+        case 'ArrowUp':
+          upKeyPressed = false;
+          break;
+        case 'ArrowDown':
+          downKeyPressed = false;
+          break;
       }
     }
 
-    function handleMouseUp() {
-      isDragging = false;
-    }
-
-    // Simuleer het draaien van de kubus op basis van de muisbeweging
-    function rotateCube(deltaX, deltaY) {
-      // Voeg hier draa logica toe op basis van de muisbeweging
-      // In dit voorbeeld wordt eenvoudigweg de volgorde van de kleuren in de matrix verschoven.
-      if (deltaX > 0) {
-        // Draai naar rechts
-        for (let row = 0; row < 3; row++) {
-          const lastColor = cubeColors[row].pop();
-          cubeColors[row].unshift(lastColor);
-        }
-      } else if (deltaX < 0) {
-        // Draai naar links
-        for (let row = 0; row < 3; row++) {
-          const firstColor = cubeColors[row].shift();
-          cubeColors[row].push(firstColor);
-        }
+    // Update paddles based on keyboard input
+    function updatePaddles() {
+      if (upKeyPressed) {
+        paddleLeftY -= paddleSpeed;
       }
 
-      if (deltaY > 0) {
-        // Draai naar beneden
-        const lastRow = cubeColors.pop();
-        cubeColors.unshift(lastRow);
-      } else if (deltaY < 0) {
-        // Draai naar boven
-        const firstRow = cubeColors.shift();
-        cubeColors.push(firstRow);
+      if (downKeyPressed) {
+        paddleLeftY += paddleSpeed;
       }
     }
 
-    // Initialiseer en teken de initiële toestand van de "Rubiks-kubus"
-    drawCube();
+    // Start the game loop
+    function gameLoop() {
+      updatePaddles();
+      draw();
+      setTimeout(gameLoop, 16); // Run at approximately 60 frames per second
+    }
+
+    // Start the game loop
+    gameLoop();
   </script>
 </body>
 </html>
