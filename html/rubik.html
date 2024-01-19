@@ -35,8 +35,8 @@
     for (let x = -1; x <= 1; x++) {
       for (let y = -1; y <= 1; y++) {
         for (let z = -1; z <= 1; z++) {
-          const cubeMaterialArray = colors.map(color => new THREE.MeshBasicMaterial({ color }));
-          const cubeMaterials = new THREE.MeshStandardMaterial(cubeMaterialArray);
+          // Maak een materiaal voor elk oppervlak van de kubus met een andere kleur
+          const cubeMaterials = colors.map(color => new THREE.MeshBasicMaterial({ color }));
           const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterials);
 
           // Plaats elk kubusje op de juiste positie met de juiste afstand
@@ -50,6 +50,10 @@
 
     // Instellingen voor camera
     camera.position.z = 5;
+
+    // Toevoeging van een hulplijnen om de oorsprong van de scène zichtbaar te maken
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
 
     // Animatiefunctie
     const animate = function () {
