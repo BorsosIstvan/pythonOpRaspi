@@ -3,88 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rubik's Cube</title>
+  <title>WebGL Rubik's Cube</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <script src="https://threejs.org/build/three.js"></script>
-  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  <canvas id="rubiksCanvas"></canvas>
 
   <script>
-    // RubiksCube class
-    class RubiksCube {
-      constructor() {
-        this.init();
-      }
+    const canvas = document.getElementById('rubiksCanvas');
+    const gl = canvas.getContext('webgl');
 
-      init() {
-        // Initialize Three.js scene, camera, and renderer
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.renderer = new THREE.WebGLRenderer();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(this.renderer.domElement);
-
-        // Create Rubiks Cube
-        this.cube = new THREE.Group();
-        this.scene.add(this.cube);
-
-        const colors = ['red', 'green', 'blue', 'orange', 'white', 'yellow'];
-
-        for (let x = 0; x < 3; x++) {
-          for (let y = 0; y < 3; y++) {
-            for (let z = 0; z < 3; z++) {
-              const geometry = new THREE.BoxGeometry(1, 1, 1);
-              const material = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
-              const cubelet = new THREE.Mesh(geometry, material);
-
-              cubelet.position.set(x - 1, y - 1, z - 1);
-              this.cube.add(cubelet);
-            }
-          }
-        }
-
-        // Set up camera position
-        this.camera.position.z = 5;
-
-        // Set up lighting
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        this.scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(1, 1, 1).normalize();
-        this.scene.add(directionalLight);
-
-        // Set up drag controls
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-        this.controls.dampingFactor = 0.25;
-        this.controls.screenSpacePanning = false;
-
-        // Set up window resize listener
-        window.addEventListener('resize', () => this.onWindowResize(), false);
-      }
-
-      onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-
-      animate() {
-        requestAnimationFrame(() => this.animate());
-        this.controls.update();
-        this.renderer.render(this.scene, this.camera);
-      }
+    if (!gl) {
+      console.error('Unable to initialize WebGL. Your browser may not support it.');
     }
 
-    // Initialize RubiksCube
-    const rubiksCube = new RubiksCube();
-    rubiksCube.animate();
+    // Vertex shader programma
+    const vsSource = `
+      attribute vec4 aVertexPosition;
+      attribute vec4 aVertexColor;
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      varying lowp vec4 vColor;
+      void main(void) {
+        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+        vColor = aVertexColor;
+      }
+    `;
+
+    // Fragment shader programma
+    const fsSource = `
+      varying lowp vec4 vColor;
+      void main(void) {
+        gl_FragColor = vColor;
+      }
+    `;
+
+    // Compileer shader
+    function compileShader(gl, source, type) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error(`Shader compilation error: ${gl.getShaderInfoLog(shader)}`);
+        gl.deleteShader(shader);
+        return null;
+      }
+
+      return shader;
+    }
+
+    // Creëer het programma
+    function createProgram(gl, vsSource, fsSource) {
+      const vertexShader = compileShader(gl, vsSource, gl.VERTEX_SHADER);
+      const fragmentShader = compileShader(gl, fsSource, gl.FRAGMENT_SHADER);
+
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error(`Program linking error: ${gl.getProgramInfoLog(program)}`);
+        return null;
+      }
+
+      return program;
+    }
+
+    const shaderProgram = createProgram(gl, vsSource, fsSource);
+
+    // Vertexgegevens voor de kubus
+    const vertices = new Float32Array([
+      // Voorvlak
+      -1.0, -1.0,  1.0, 1.0, 0.0, 0.0,  // P1
+       1.0, -1.0,  1.0, 1.0, 0.0, 0.0,  // P2
+       1.0,  1.0,  1.0, 1.0, 0.0, 0.0,  // P3
+      -1.0,  1.0,  1.0, 1.0, 0.0, 0.0,  // P4
+
+      // Achtervlak
+      -1.0, -1.0, -1.0, 0.0, 1.0, 0.0,  // P5
+       1.0, -1.0, -1.0, 0.0, 1.0, 0.0,  // P6
+       1.0,  1.0, -1.0, 0.0, 1.0, 0.0,  // P7
+      -1.0,  1.0, -1.0, 0.0, 1.0, 0.0   // P8
+    ]);
+
+    // Indexgegevens voor de kubus
+    const indices = new Uint16Array([
+      0, 1, 2, 0, 2, 3,  // Voorvlak
+      4, 5, 6, 4, 6, 7,  // Achtervlak
+      3, 2, 6, 3, 6, 7,  // Bovenkant
+      0, 1, 5, 0, 5, 4,  // Onderkant
+      1, 5, 6, 1, 6, 2,  // Rechterkant
+      0, 4, 7, 0, 7, 3   // Linkerkant
+    ]);
+
+    // Creeër en vul de buffer objecten
+    const vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    // Verwijs naar de shader attributen en uniformen
+    const vertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+    const vertexColor = gl.getAttribLocation(shaderProgram, 'aVertexColor');
+    const modelViewMatrix = gl.getUniformLocation(shaderProgram, 'uModelViewMatrix');
+    const projectionMatrix = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
+
+    // Configureer de vertexattributen
+    gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0);
+    gl.enableVertexAttribArray(vertexPosition);
+
+    gl.vertexAttribPointer(vertexColor, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+    gl.enableVertexAttribArray(vertexColor);
+
+    // Instellingen voor de kijkmatrix
+    const eye = [0, 0, 5];
+    const center = [0, 0, 0];
+    const up = [0, 1, 0];
+
+    const modelViewMatrixValue = new Float32Array(16);
+    const projectionMatrixValue = new Float32Array(16);
+
+    gl.clearColor(0.9, 0.9, 0.9, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.enable(gl.DEPTH_TEST);
+
+    // Bereken de projectiematrix
+    mat4.perspective(projectionMatrixValue, Math.PI / 4, canvas.width / canvas.height, 0.1, 100.0);
+
+    // Bereken de kijkmatrix
+    mat4.lookAt(modelViewMatrixValue, eye, center, up);
+
+    // Stuur de matrices naar de shaders
+    gl.useProgram(shaderProgram);
+    gl.uniformMatrix4fv(modelViewMatrix, false, modelViewMatrixValue);
+    gl.uniformMatrix4fv(projectionMatrix, false, projectionMatrixValue);
+
+    // Teken de kubus
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
   </script>
 </body>
 </html>
