@@ -17,6 +17,11 @@
     const ctx = canvas.getContext('2d');
     const squareSize = 100;
     const gap = 10;
+    let cubeColors = [
+      ['red', 'green', 'blue'],
+      ['yellow', 'orange', 'purple'],
+      ['purple', 'red', 'green']
+    ];
 
     // Functie om een vierkant te tekenen
     function drawSquare(x, y, color) {
@@ -24,16 +29,73 @@
       ctx.fillRect(x, y, squareSize, squareSize);
     }
 
-    // Teken een 3x3 "Rubiks-kubus" met zes verschillende kleuren
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const x = col * (squareSize + gap);
-        const y = row * (squareSize + gap);
-        const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
-        const color = colors[row * 3 + col];
-        drawSquare(x, y, color);
+    // Teken de huidige toestand van de "Rubiks-kubus"
+    function drawCube() {
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          const x = col * (squareSize + gap);
+          const y = row * (squareSize + gap);
+          const color = cubeColors[row][col];
+          drawSquare(x, y, color);
+        }
       }
     }
+
+    // Functie om een rij naar links te verschuiven
+    function shiftRowLeft(rowIndex) {
+      const shiftedRow = cubeColors[rowIndex].shift();
+      cubeColors[rowIndex].push(shiftedRow);
+    }
+
+    // Functie om een rij naar rechts te verschuiven
+    function shiftRowRight(rowIndex) {
+      const shiftedRow = cubeColors[rowIndex].pop();
+      cubeColors[rowIndex].unshift(shiftedRow);
+    }
+
+    // Functie om een kolom omhoog te verschuiven
+    function shiftColumnUp(colIndex) {
+      const shiftedColumn = cubeColors[0][colIndex];
+      for (let i = 0; i < 2; i++) {
+        cubeColors[i][colIndex] = cubeColors[i + 1][colIndex];
+      }
+      cubeColors[2][colIndex] = shiftedColumn;
+    }
+
+    // Functie om een kolom omlaag te verschuiven
+    function shiftColumnDown(colIndex) {
+      const shiftedColumn = cubeColors[2][colIndex];
+      for (let i = 2; i > 0; i--) {
+        cubeColors[i][colIndex] = cubeColors[i - 1][colIndex];
+      }
+      cubeColors[0][colIndex] = shiftedColumn;
+    }
+
+    // Voeg event listeners toe voor toetsenbordinvoer
+    document.addEventListener('keydown', handleKeyPress);
+
+    function handleKeyPress(event) {
+      switch (event.key) {
+        case 'ArrowLeft':
+          shiftRowLeft(1); // Verschuif de middelste rij naar links
+          break;
+        case 'ArrowRight':
+          shiftRowRight(1); // Verschuif de middelste rij naar rechts
+          break;
+        case 'ArrowUp':
+          shiftColumnUp(1); // Verschuif de middelste kolom omhoog
+          break;
+        case 'ArrowDown':
+          shiftColumnDown(1); // Verschuif de middelste kolom omlaag
+          break;
+      }
+
+      // Teken de bijgewerkte kubus
+      drawCube();
+    }
+
+    // Initialiseer en teken de initiële toestand van de "Rubiks-kubus"
+    drawCube();
   </script>
 </body>
 </html>
