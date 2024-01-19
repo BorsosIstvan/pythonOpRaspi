@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Cube with Three.js</title>
+  <title>3D Rubiks Cube with Three.js</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    #cubeContainer { position: absolute; }
+    #rubiksCubeContainer { position: absolute; }
   </style>
 </head>
 <body>
-  <div id="cubeContainer"></div>
+  <div id="rubiksCubeContainer"></div>
 
   <script src="https://threejs.org/build/three.js"></script>
   <script>
@@ -19,15 +19,34 @@
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('cubeContainer').appendChild(renderer.domElement);
+    document.getElementById('rubiksCubeContainer').appendChild(renderer.domElement);
 
-    // Geometrie en materiaal voor de kubus
-    const cubeGeometry = new THREE.BoxGeometry();
-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    // Grootte van elk kubusje en afstand tussen kubusjes
+    const cubeSize = 1.0;
+    const spacing = 0.1;
 
-    // Voeg de kubus toe aan de scene
-    scene.add(cubeMesh);
+    // Geometrie en materiaal voor een kubusje
+    const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+
+    // Kleuren voor elke kant van de Rubiks-kubus
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+
+    // Maak de Rubiks-kubus
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const cubeMaterialArray = colors.map(color => new THREE.MeshBasicMaterial({ color }));
+          const cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+          const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterials);
+
+          // Plaats elk kubusje op de juiste positie met de juiste afstand
+          cubeMesh.position.set(x * (cubeSize + spacing), y * (cubeSize + spacing), z * (cubeSize + spacing));
+
+          // Voeg het kubusje toe aan de scene
+          scene.add(cubeMesh);
+        }
+      }
+    }
 
     // Instellingen voor camera
     camera.position.z = 5;
@@ -37,8 +56,8 @@
       requestAnimationFrame(animate);
 
       // Rotatieanimatie (optioneel)
-      cubeMesh.rotation.x += 0.01;
-      cubeMesh.rotation.y += 0.01;
+      scene.rotation.x += 0.005;
+      scene.rotation.y += 0.005;
 
       renderer.render(scene, camera);
     };
