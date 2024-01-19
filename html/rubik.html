@@ -3,70 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Surface Plot with Three.js</title>
+  <title>3D Cube with Three.js</title>
   <style>
     body { margin: 0; overflow: hidden; }
-    #surfacePlot { position: absolute; }
+    #cubeContainer { position: absolute; }
   </style>
 </head>
 <body>
-  <div id="surfacePlot"></div>
+  <div id="cubeContainer"></div>
 
   <script src="https://threejs.org/build/three.js"></script>
-<script>
-  // Initialiseren van Three.js-scene
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.getElementById('surfacePlot').appendChild(renderer.domElement);
+  <script>
+    // Initialiseren van Three.js-scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('cubeContainer').appendChild(renderer.domElement);
 
-  // Oppervlaktegegevens (voorbeeldgegevens)
-  const surfaceData = [];
+    // Geometrie en materiaal voor de kubus
+    const cubeGeometry = new THREE.BoxGeometry();
+    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
-  for (let x = -5; x <= 5; x += 0.5) {
-    for (let z = -5; z <= 5; z += 0.5) {
-      const y = Math.sin(Math.sqrt(x ** 2 + z ** 2)) * 2;
-      surfaceData.push({ x, y, z });
-    }
-  }
+    // Voeg de kubus toe aan de scene
+    scene.add(cubeMesh);
 
-  // Creëer een geometrie en een materiaal voor de oppervlakte
-  const surfaceGeometry = new THREE.BufferGeometry();
-  const positionArray = new Float32Array(surfaceData.length * 3);
+    // Instellingen voor camera
+    camera.position.z = 5;
 
-  for (let i = 0; i < surfaceData.length; i++) {
-    positionArray[i * 3] = surfaceData[i].x;
-    positionArray[i * 3 + 1] = surfaceData[i].y;
-    positionArray[i * 3 + 2] = surfaceData[i].z;
-  }
+    // Animatiefunctie
+    const animate = function () {
+      requestAnimationFrame(animate);
 
-  surfaceGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
-  const surfaceMaterial = new THREE.PointsMaterial({ color: 0x00ff00, size: 0.1 });
+      // Rotatieanimatie (optioneel)
+      cubeMesh.rotation.x += 0.01;
+      cubeMesh.rotation.y += 0.01;
 
-  // Creëer een oppervlaktepuntenwolk
-  const surfacePlot = new THREE.Points(surfaceGeometry, surfaceMaterial);
+      renderer.render(scene, camera);
+    };
 
-  // Voeg de oppervlaktepuntenwolk toe aan de scene
-  scene.add(surfacePlot);
-
-  // Instellingen voor camera
-  camera.position.z = 5;
-
-  // Animatiefunctie
-  const animate = function () {
-    requestAnimationFrame(animate);
-
-    // Rotatieanimatie (optioneel)
-    surfacePlot.rotation.x += 0.01;
-    surfacePlot.rotation.y += 0.01;
-
-    renderer.render(scene, camera);
-  };
-
-  // Start de animatie
-  animate();
-</script>
-
+    // Start de animatie
+    animate();
+  </script>
 </body>
 </html>
