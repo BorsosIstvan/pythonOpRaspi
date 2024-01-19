@@ -36,7 +36,7 @@
       for (let y = -1; y <= 1; y++) {
         for (let z = -1; z <= 1; z++) {
           const cubeMaterialArray = colors.map(color => new THREE.MeshBasicMaterial({ color }));
-          const cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+          const cubeMaterials = new THREE.MeshStandardMaterial(cubeMaterialArray);
           const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterials);
 
           // Plaats elk kubusje op de juiste positie met de juiste afstand
