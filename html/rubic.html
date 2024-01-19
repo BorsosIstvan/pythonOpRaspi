@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Rubiks Cube</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <script src="https://threejs.org/build/three.js"></script>
+  <script>
+    // RubiksCube class
+    class RubiksCube {
+      constructor() {
+        this.init();
+      }
+
+      init() {
+        // Initialize Three.js scene, camera, and renderer
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(this.renderer.domElement);
+
+        // Create Rubiks Cube
+        this.cube = new THREE.Group();
+        this.scene.add(this.cube);
+
+        const colors = ['red', 'green', 'blue', 'orange', 'white', 'yellow'];
+
+        for (let x = 0; x < 3; x++) {
+          for (let y = 0; y < 3; y++) {
+            for (let z = 0; z < 3; z++) {
+              const geometry = new THREE.BoxGeometry(1, 1, 1);
+              const material = new THREE.MeshBasicMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
+              const cubelet = new THREE.Mesh(geometry, material);
+
+              cubelet.position.set(x - 1, y - 1, z - 1);
+              this.cube.add(cubelet);
+            }
+          }
+        }
+
+        // Set up camera position
+        this.camera.position.z = 5;
+
+        // Set up drag controls
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+        this.controls.dampingFactor = 0.25;
+        this.controls.screenSpacePanning = false;
+
+        // Set up window resize listener
+        window.addEventListener('resize', () => this.onWindowResize(), false);
+      }
+
+      onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      animate() {
+        requestAnimationFrame(() => this.animate());
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    // Initialize RubiksCube
+    const rubiksCube = new RubiksCube();
+    rubiksCube.animate();
+  </script>
+</body>
+</html>
