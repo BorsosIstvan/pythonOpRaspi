@@ -90,5 +90,6 @@ class TicTacToe {
 
 // Maak een instantie van TicTacToe wanneer de pagina laadt
 document.addEventListener('DOMContentLoaded', () => {
-  new TicTacToe();
+  const game = new TicTacToe();
+  game.render(); // Voeg hier render-aanroep toe
 });
