@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Rubiks Cube</title>
+  <title>Rubik's Cube</title>
   <style>
     body { margin: 0; overflow: hidden; }
   </style>
 </head>
 <body>
   <script src="https://threejs.org/build/three.js"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
   <script>
     // RubiksCube class
     class RubiksCube {
@@ -35,7 +36,7 @@
           for (let y = 0; y < 3; y++) {
             for (let z = 0; z < 3; z++) {
               const geometry = new THREE.BoxGeometry(1, 1, 1);
-              const material = new THREE.MeshBasicMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
+              const material = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
               const cubelet = new THREE.Mesh(geometry, material);
 
               cubelet.position.set(x - 1, y - 1, z - 1);
@@ -46,6 +47,14 @@
 
         // Set up camera position
         this.camera.position.z = 5;
+
+        // Set up lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1).normalize();
+        this.scene.add(directionalLight);
 
         // Set up drag controls
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
