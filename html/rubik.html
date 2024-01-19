@@ -3,155 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebGL Rubik's Cube</title>
+  <title>2D Rubik's Cube</title>
   <style>
     body { margin: 0; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="rubiksCanvas"></canvas>
+  <canvas id="rubiksCanvas" width="300" height="300"></canvas>
 
   <script>
     const canvas = document.getElementById('rubiksCanvas');
-    const gl = canvas.getContext('webgl');
+    const ctx = canvas.getContext('2d');
+    const squareSize = 100;
+    const gap = 10;
 
-    if (!gl) {
-      console.error('Unable to initialize WebGL. Your browser may not support it.');
+    // Functie om een vierkant te tekenen
+    function drawSquare(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, squareSize, squareSize);
     }
 
-    // Vertex shader programma
-    const vsSource = `
-      attribute vec4 aVertexPosition;
-      attribute vec4 aVertexColor;
-      uniform mat4 uModelViewMatrix;
-      uniform mat4 uProjectionMatrix;
-      varying lowp vec4 vColor;
-      void main(void) {
-        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-        vColor = aVertexColor;
+    // Teken een 3x3 "Rubiks-kubus" met zes verschillende kleuren
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const x = col * (squareSize + gap);
+        const y = row * (squareSize + gap);
+        const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
+        const color = colors[row * 3 + col];
+        drawSquare(x, y, color);
       }
-    `;
-
-    // Fragment shader programma
-    const fsSource = `
-      varying lowp vec4 vColor;
-      void main(void) {
-        gl_FragColor = vColor;
-      }
-    `;
-
-    // Compileer shader
-    function compileShader(gl, source, type) {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error(`Shader compilation error: ${gl.getShaderInfoLog(shader)}`);
-        gl.deleteShader(shader);
-        return null;
-      }
-
-      return shader;
     }
-
-    // Creëer het programma
-    function createProgram(gl, vsSource, fsSource) {
-      const vertexShader = compileShader(gl, vsSource, gl.VERTEX_SHADER);
-      const fragmentShader = compileShader(gl, fsSource, gl.FRAGMENT_SHADER);
-
-      const program = gl.createProgram();
-      gl.attachShader(program, vertexShader);
-      gl.attachShader(program, fragmentShader);
-      gl.linkProgram(program);
-
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error(`Program linking error: ${gl.getProgramInfoLog(program)}`);
-        return null;
-      }
-
-      return program;
-    }
-
-    const shaderProgram = createProgram(gl, vsSource, fsSource);
-
-    // Vertexgegevens voor de kubus
-    const vertices = new Float32Array([
-      // Voorvlak
-      -1.0, -1.0,  1.0, 1.0, 0.0, 0.0,  // P1
-       1.0, -1.0,  1.0, 1.0, 0.0, 0.0,  // P2
-       1.0,  1.0,  1.0, 1.0, 0.0, 0.0,  // P3
-      -1.0,  1.0,  1.0, 1.0, 0.0, 0.0,  // P4
-
-      // Achtervlak
-      -1.0, -1.0, -1.0, 0.0, 1.0, 0.0,  // P5
-       1.0, -1.0, -1.0, 0.0, 1.0, 0.0,  // P6
-       1.0,  1.0, -1.0, 0.0, 1.0, 0.0,  // P7
-      -1.0,  1.0, -1.0, 0.0, 1.0, 0.0   // P8
-    ]);
-
-    // Indexgegevens voor de kubus
-    const indices = new Uint16Array([
-      0, 1, 2, 0, 2, 3,  // Voorvlak
-      4, 5, 6, 4, 6, 7,  // Achtervlak
-      3, 2, 6, 3, 6, 7,  // Bovenkant
-      0, 1, 5, 0, 5, 4,  // Onderkant
-      1, 5, 6, 1, 6, 2,  // Rechterkant
-      0, 4, 7, 0, 7, 3   // Linkerkant
-    ]);
-
-    // Creeër en vul de buffer objecten
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-    // Verwijs naar de shader attributen en uniformen
-    const vertexPosition = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-    const vertexColor = gl.getAttribLocation(shaderProgram, 'aVertexColor');
-    const modelViewMatrix = gl.getUniformLocation(shaderProgram, 'uModelViewMatrix');
-    const projectionMatrix = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
-
-    // Configureer de vertexattributen
-    gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0);
-    gl.enableVertexAttribArray(vertexPosition);
-
-    gl.vertexAttribPointer(vertexColor, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
-    gl.enableVertexAttribArray(vertexColor);
-
-    // Instellingen voor de kijkmatrix
-    const eye = [0, 0, 5];
-    const center = [0, 0, 0];
-    const up = [0, 1, 0];
-
-    const modelViewMatrixValue = new Float32Array(16);
-    const projectionMatrixValue = new Float32Array(16);
-
-    gl.clearColor(0.9, 0.9, 0.9, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.enable(gl.DEPTH_TEST);
-
-    // Bereken de projectiematrix
-    mat4.perspective(projectionMatrixValue, Math.PI / 4, canvas.width / canvas.height, 0.1, 100.0);
-
-    // Bereken de kijkmatrix
-    mat4.lookAt(modelViewMatrixValue, eye, center, up);
-
-    // Stuur de matrices naar de shaders
-    gl.useProgram(shaderProgram);
-    gl.uniformMatrix4fv(modelViewMatrix, false, modelViewMatrixValue);
-    gl.uniformMatrix4fv(projectionMatrix, false, projectionMatrixValue);
-
-    // Teken de kubus
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
   </script>
 </body>
 </html>
