@@ -51,6 +51,10 @@
     // Instellingen voor camera
     camera.position.z = 5;
 
+    // Toevoeging van een hulplijnen om de oorsprong van de scène zichtbaar te maken
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
+
     // Animatiefunctie
     const animate = function () {
       requestAnimationFrame(animate);
